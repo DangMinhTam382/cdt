@@ -139,6 +139,16 @@ public class CMakeBuildConfiguration extends CBuildConfiguration implements ICMa
 			cmakeProperties.setAllTarget(allTarget);
 		}
 
+		boolean useDefaultBuildType = Boolean.valueOf(properties.get(CMAKE_USE_DEFAULT_BUILD_TYPE));
+		String buildType = null;
+		if (!useDefaultBuildType) {
+			buildType = properties.get(CMAKE_BUILD_TYPE);
+		}
+		if (buildType == null || buildType.isBlank()) {
+			buildType = ILaunchManager.DEBUG_MODE.equals(getLaunchMode()) ? "Debug" : "Release"; //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		cmakeProperties.setBuildType(buildType);
+
 		return cmakeProperties;
 	}
 
@@ -177,13 +187,6 @@ public class CMakeBuildConfiguration extends CBuildConfiguration implements ICMa
 			ICMakeProperties cmakeProperties = getCMakeProperties();
 
 			runCMake |= !Files.exists(buildDir.resolve("CMakeCache.txt")); //$NON-NLS-1$
-
-			// Causes CMAKE_BUILD_TYPE to be set according to the launch mode
-			if (ILaunchManager.DEBUG_MODE.equals(getLaunchMode())) {
-				cmakeProperties.setBuildType("Debug"); //$NON-NLS-1$
-			} else {
-				cmakeProperties.setBuildType("Release"); //$NON-NLS-1$
-			}
 
 			if (!runCMake) {
 				ICMakeGenerator generator = cmakeProperties.getGenerator();
@@ -571,7 +574,9 @@ public class CMakeBuildConfiguration extends CBuildConfiguration implements ICMa
 				CMAKE_ARGUMENTS, CMAKE_ARGUMENTS_DEFAULT, //
 				CMAKE_BUILD_COMMAND, CMAKE_BUILD_COMMAND_DEFAULT, //
 				CMAKE_ALL_TARGET, CMAKE_ALL_TARGET_DEFAULT, //
-				CMAKE_CLEAN_TARGET, CMAKE_CLEAN_TARGET_DEFAULT //
+				CMAKE_CLEAN_TARGET, CMAKE_CLEAN_TARGET_DEFAULT, //
+				CMAKE_USE_DEFAULT_BUILD_TYPE, CMAKE_USE_DEFAULT_BUILD_TYPE_DEFAULT, //
+				CMAKE_BUILD_TYPE, ILaunchManager.DEBUG_MODE.equals(getLaunchMode()) ? "Debug" : "Release" //$NON-NLS-1$ //$NON-NLS-2$
 		);
 	}
 
